@@ -1,7 +1,7 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import pandas as pd
-
+import matplotlib.dates as mdates
 def plot_hazard_curve(hazard_df: pd.DataFrame | None):
     """
     Plot survival points and precomputed spline curve on Streamlit.
@@ -104,3 +104,45 @@ def render_portfolio_placeholder():
         For now, this is a placeholder so that wiring it in later is painless.
         """
     )
+
+
+##CDS Plots##
+def plot_cds_basis_curves(basis_df, title='CDS Basis Over Time', figsize=(12, 6)):
+    """
+    Create a CDS basis curves figure for all tenors and return the Matplotlib figure.
+
+    Args:
+        basis_df: DataFrame with 'Date' column and 'CDS_Basis_*Y' columns
+        title: plot title
+        figsize: figure size (width, height)
+
+    Returns:
+        fig: Matplotlib Figure object
+    """
+    tenors_config = [
+        ('CDS_Basis_1Y', 'steelblue', 'CDS Basis 1Y'),
+        ('CDS_Basis_5Y', 'orange', 'CDS Basis 5Y'),
+        ('CDS_Basis_10Y', 'red', 'CDS Basis 10Y')
+    ]
+    
+    fig, ax = plt.subplots(figsize=figsize)
+
+    for col_name, color, label in tenors_config:
+        if col_name in basis_df.columns:
+            ax.plot(basis_df['Date'], basis_df[col_name],
+                    color=color, linewidth=2, label=label)
+
+    ax.set_title(title, fontsize=16, fontweight='bold', pad=15)
+    ax.set_xlabel('Date', fontsize=12)
+    ax.set_ylabel('Basis (bps)', fontsize=12)
+
+    # Format date axis
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+    fig.autofmt_xdate()
+
+    ax.grid(True, which='major', linestyle='--', alpha=0.6)
+    ax.legend(frameon=False, fontsize=11)
+    fig.tight_layout()
+
+    return fig

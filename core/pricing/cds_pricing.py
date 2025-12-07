@@ -109,6 +109,23 @@ def bootstrap_hazard(df_cds_series, payment_dates, df_risk_free, obs_date, recov
     h_est = sol.root
     return h_est
 
+def bootstrap_all_hazards(df_1y, df_5y, df_10y, payment_dates, df_risk_free, obs_date, recovery_rate):
+    """
+    Bootstrap hazard rates for all three tenors.
+    
+    Args:
+        df_1y, df_5y, df_10y: CDS data for each tenor
+        payment_dates: payment dates list
+        df_risk_free: risk-free curve DataFrame with 'tenor', 'rate' columns
+        obs_date: observation date
+        recovery_rate: assumed recovery rate
+    
+    Returns: tuple of (h_1y, h_5y, h_10y)
+    """
+    h_1y = bootstrap_hazard(df_1y, payment_dates, df_risk_free, obs_date, recovery_rate)
+    h_5y = bootstrap_hazard(df_5y, payment_dates, df_risk_free, obs_date, recovery_rate)
+    h_10y = bootstrap_hazard(df_10y, payment_dates, df_risk_free, obs_date, recovery_rate)
+    return h_1y, h_5y, h_10y
 
 def construct_survival_curve(payment_dates, hazard_rates, segment_starts):
     """
@@ -290,40 +307,3 @@ def calculate_all_basis_across_dates(df_cds_bond, tenor_configs_dict, segment_st
         basis_series.append(basis_row)
     
     return pd.DataFrame(basis_series)
-
-def plot_cds_basis_curves(basis_df, title='CDS Basis Over Time', figsize=(12, 6)):
-    """
-    Plot CDS basis curves for all tenors.
-    
-    Args:
-        basis_df: DataFrame with 'Date' column and 'CDS_Basis_*Y' columns
-        title: plot title
-        figsize: figure size (width, height)
-    """
-    import matplotlib.dates as mdates
-    
-    tenors_config = [
-        ('CDS_Basis_1Y', 'steelblue', 'CDS Basis 1Y'),
-        ('CDS_Basis_5Y', 'orange', 'CDS Basis 5Y'),
-        ('CDS_Basis_10Y', 'red', 'CDS Basis 10Y')
-    ]
-    
-    plt.figure(figsize=figsize)
-    
-    for col_name, color, label in tenors_config:
-        plt.plot(basis_df['Date'], basis_df[col_name],
-                color=color, linewidth=2, label=label)
-    
-    plt.title(title, fontsize=16, fontweight='bold', pad=15)
-    plt.xlabel('Date', fontsize=12)
-    plt.ylabel('Basis (bps)', fontsize=12)
-    
-    # Format date axis
-    plt.gca().xaxis.set_major_locator(mdates.YearLocator())
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
-    plt.gcf().autofmt_xdate()
-    
-    plt.grid(True, which='major', linestyle='--', alpha=0.6)
-    plt.legend(frameon=False, fontsize=11)
-    plt.tight_layout()
-    plt.show()
