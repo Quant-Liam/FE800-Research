@@ -55,7 +55,7 @@ def plot_hazard_curve(hazard_df: pd.DataFrame | None):
 
         fig.tight_layout()
 
-    st.pyplot(fig)
+    return fig
 
 
 
@@ -125,7 +125,7 @@ def plot_cds_basis_curves(basis_df, title='CDS Basis Over Time', figsize=(12, 6)
         ('CDS_Basis_10Y', 'red', 'CDS Basis 10Y')
     ]
     
-    fig, ax = plt.subplots(figsize=figsize)
+    fig, ax = plt.subplots(figsize=(10, 6))
 
     for col_name, color, label in tenors_config:
         if col_name in basis_df.columns:
@@ -141,8 +141,10 @@ def plot_cds_basis_curves(basis_df, title='CDS Basis Over Time', figsize=(12, 6)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
     fig.autofmt_xdate()
 
+
     ax.grid(True, which='major', linestyle='--', alpha=0.6)
-    ax.legend(frameon=False, fontsize=11)
+    ax.legend(title="Tenor", frameon=False, fontsize=11)
+
     fig.tight_layout()
 
     return fig

@@ -254,52 +254,30 @@ def price_bond_with_default_risk(df_schedule, discount_factors, survival_probs, 
     return df, total_pv
 
 #Option Adjusted Spread Calibration
+def price_with_spread(df_schedule, spread, recovery_rate, par):
+    """
+    Price the bond under a constant OAS 'spread' (decimal).
+    Uses existing columns: t, discount_factor, cashflow, Q_fit_spline, Q_previous.
+    """
+    t = df_schedule['t'].values
+    Z0 = df_schedule['discount_factor'].values
+    C = df_schedule['cashflow'].values
+    Q = df_schedule['Q_fit_spline'].values
+    Q_prev = df_schedule['Q_previous'].values
+
+    Z_adj = Z0 * np.exp(-spread * t)
+
+    pv_cash = Z_adj * C * Q
+    pv_rec = Z_adj * recovery_rate * par * (Q_prev - Q)
+
+    return (pv_cash + pv_rec).sum()
+
 
 def calibrate_oas(df_schedule, market_price, recovery_rate, par, search_range=(-0.20, 0.20)):
-    """
-    Calibrate option-adjusted spread (OAS) to match market price.
-    
-    Parameters:
-    -----------
-    df_schedule : pd.DataFrame
-        Bond schedule with columns: t, discount_factor, cashflow, Q_fit_spline, Q_previous
-    market_price : float
-        Observed market price of the bond
-    recovery_rate : float
-        Recovery rate on default
-    par : float
-        Par value of the bond
-    search_range : tuple
-        (min_spread, max_spread) in decimal form
-    
-    Returns:
-    --------
-    dict
-        Dictionary with 'oas_decimal' and 'oas_bps' keys
-    """
     df_cf = df_schedule.copy()
-    
-    def price_with_spread(s):
-        """
-        Price the bond under an additional constant spread s (decimal).
-        s > 0 => higher discounting => lower price.
-        """
-        t = df_cf['t'].values
-        Z0 = df_cf['discount_factor'].values
-        C = df_cf['cashflow'].values
-        Q = df_cf['Q_fit_spline'].values
-        Q_prev = df_cf['Q_previous'].values
-        
-        # Adjusted discount factors: Z_i(s) = Z_i * exp(-s * t_i)
-        Z_adj = Z0 * np.exp(-s * t)
-        
-        pv_cash = Z_adj * C * Q
-        pv_rec = Z_adj * recovery_rate * par * (Q_prev - Q)
-        
-        return (pv_cash + pv_rec).sum()
-    
+
     def objective(s):
-        return price_with_spread(s) - market_price
+        return price_with_spread(df_cf, s, recovery_rate, par) - market_price
     
     oas_decimal = brentq(objective, search_range[0], search_range[1])
     

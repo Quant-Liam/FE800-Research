@@ -16,7 +16,6 @@ def compute_bond_framework():
     #Going to need a dataloader for the database item, but this works for now
 
     df = calculate_survival_probabilities(df, expm, recovery_rate=0.4)
-    ####Plot the hazard rate curve####### Need to write this in later, I want to get outputs done first
 
     ####Fitting the spline###
     params, covariance = fit_exponential_spline(df['Time_to_Maturity'], df['s_tau'])
