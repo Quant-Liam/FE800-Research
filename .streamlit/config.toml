@@ -1,0 +1,6 @@
+[theme]
+primaryColor = "#CC0000"          # Stevens Red
+backgroundColor = "#1E1E1E"       # Light Grey Background
+secondaryBackgroundColor = "#FFFFFF"  # White for containers/boxes
+textColor = "#FFFFFF"             # Red Text
+font = "sans serif"
